@@ -3,7 +3,6 @@
 fetch("http://localhost:3000/api/products")
   .then((res) => res.json())
   .then((datas) => {
-    console.log(datas);
 
     //on pointe roger
 
@@ -12,7 +11,6 @@ fetch("http://localhost:3000/api/products")
     //créer des blocs dynamiqueS
 
     for (data of datas) {
-      console.log(data);
       roger.insertAdjacentHTML(
         "beforeend",
         `

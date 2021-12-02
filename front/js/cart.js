@@ -6,29 +6,27 @@ var totalQuantity = 0;
 var totalPrice = 0;
 
 cart = JSON.parse(localStorage.getItem("cart"));
+if (cart && cart.length > 0) {
+  for (let i = 0; i < cart.length; i++) {
+    fetch("http://localhost:3000/api/products/" + cart[i].id)
+      .then((res) => res.json())
+      .then((data) => {
 
-for (let i = 0; i < cart.length; i++) {
-  fetch("http://localhost:3000/api/products/" + cart[i].id)
-    .then((res) => res.json())
-    .then((data) => {
-      console.log(data);
-      console.log(cart[i]);
+        totalPrice += data.price * cart[i].quantity;
+        totalQuantity += cart[i].quantity;
+        totalQuantityTag.innerHTML = totalQuantity;
+        totalPriceTag.innerHTML = totalPrice;
 
-      totalPrice += data.price * cart[i].quantity;
-      totalQuantity += cart[i].quantity;
-      totalQuantityTag.innerHTML = totalQuantity;
-      totalPriceTag.innerHTML = totalPrice;
-
-      cartItems.insertAdjacentHTML(
-        "beforeend",
-        `
+        cartItems.insertAdjacentHTML(
+          "beforeend",
+          `
                             <article class="cart__item" data-id="${
                               cart[i].id
                             }" data-color="${cart[i].color}">
                                 <div class="cart__item__img">
                                     <img src="${data.imageUrl}" alt="${
-          data.altTxt
-        }">
+            data.altTxt
+          }">
                                 </div>
                                 <div class="cart__item__content">
                                 <div class="cart__item__content__description">
@@ -50,6 +48,35 @@ for (let i = 0; i < cart.length; i++) {
                             </div>
                             </article>
                         `
-      );
-    });
+        );
+
+        let itemDelete = document.querySelectorAll(
+          ".cart__item__content__settings__delete"
+        );
+        let currentArticle
+        let itemInputNumber = document.querySelector(".itemQuantity");
+
+          for (let index = 0; index < itemDelete.length; index++) {
+            currentArticle = itemDelete[index].closest(":not(div)")
+            itemDelete[index].addEventListener("click", () => {
+              if (
+                currentArticle.dataset.id == cart[i].id &&
+                currentArticle.dataset.color == cart[i].color
+              ) {
+                cart.splice(cart.indexOf(cart[i]), 1);
+    
+                if (cart.length === 0) {
+                  localStorage.removeItem("cart");
+                } else {
+                  localStorage.setItem("cart", JSON.stringify(cart));
+                }
+              }
+            });
+          }
+        
+
+        itemInputNumber.addEventListener("change", (result) => {
+        });
+      });
+  }
 }
