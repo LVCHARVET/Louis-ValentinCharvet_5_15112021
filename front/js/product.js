@@ -22,7 +22,13 @@ fetch("http://localhost:3000/api/products/" + id)
 
     //on injecte
 
-    itemImg.innerHTML = `<img src="${data.imageUrl}" alt="${data.altTxt}">`;
+    //itemImg.innerHTML = `<img src="${data.imageUrl}" alt="${data.altTxt}">`;
+
+    let img = document.createElement('img')
+    img.src = data.imageUrl
+    img.alt = data.altTxt
+    itemImg.appendChild(img)
+
     itemName.innerHTML = `${data.name}`;
     itemPrice.innerHTML = `${data.price}`;
     itemDescription.innerHTML = `${data.description}`;
