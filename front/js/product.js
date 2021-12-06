@@ -11,7 +11,6 @@ fetch("http://localhost:3000/api/products/" + id)
   .then((data) => {
 
     //on pointe
-
     let itemImg = document.querySelector(".item__img");
     let itemName = document.querySelector("#title");
     let itemPrice = document.querySelector("#price");
@@ -38,11 +37,9 @@ fetch("http://localhost:3000/api/products/" + id)
     }
 
     // On écoute le clique commande
-
     itemAdd.addEventListener("click", () => {
 
-        // On défini le panier
-
+      // On défini le panier
       let product = {
         id: data._id,
         color: itemColors.value,
@@ -52,7 +49,6 @@ fetch("http://localhost:3000/api/products/" + id)
       let cart = [];
 
       // On gére les donnés présente dans le panier
-
       if (localStorage.getItem("cart") != null) {
         cart = JSON.parse(localStorage.getItem("cart"));
         for (prod of cart) {
@@ -62,6 +58,7 @@ fetch("http://localhost:3000/api/products/" + id)
           }
         }
       }
+      //On renvois le panier
       cart.push(product);
       localStorage.setItem("cart", JSON.stringify(cart));
     });

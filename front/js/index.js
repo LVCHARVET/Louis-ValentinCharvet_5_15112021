@@ -8,11 +8,10 @@ fetch("http://localhost:3000/api/products")
 
     let roger = document.querySelector("#items");
 
-    //créer des blocs dynamiqueS
+    //créer des blocs HTML dynamiqueS
 
     for (data of datas) {
-      roger.insertAdjacentHTML(
-        "beforeend",
+      roger.insertAdjacentHTML("beforeend",
         `
                 <a href="./product.html?id=${data._id}">
                     <article>
