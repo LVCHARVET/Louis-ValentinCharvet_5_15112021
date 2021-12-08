@@ -12,7 +12,7 @@ cart = JSON.parse(localStorage.getItem("cart"));
   */
 function setCartItem(item) {
   item.insertAdjacentHTML("beforeend",
-      `
+    `
             <article class="cart__item" data-id="${article._id}" data-color="${article.color}">
               <div class="cart__item__img">
                 <img src="${article.imageUrl}" alt="${article.altTxt}">
@@ -35,7 +35,7 @@ function setCartItem(item) {
               </div>
             </article>
           `
-    );
+  );
 }
 
 /**
@@ -46,9 +46,8 @@ let startCartHandle = () => {
   /*** GESTION DE LA SUPPRESSION D'ARTICLE DANS LE PANIER */
   let itemDelete = document.querySelectorAll(".cart__item__content__settings__delete");
   let currentArticle;
-  console.log(itemDelete)
 
-  for (iDelete of itemDelete) {    
+  for (iDelete of itemDelete) {
     iDelete.addEventListener("click", (e) => {
       currentArticle = e.target.closest("article");
       indexCart = cart.findIndex(x => x._id === currentArticle.dataset.id && x.color === currentArticle.dataset.color)
@@ -84,7 +83,6 @@ let startCartHandle = () => {
       articleQuantity = parseInt(e.target.value);
 
       indexCart = cart.findIndex(x => x._id === actualArticleId && x.color === actualColor)
-      console.log(indexCart)
 
       // Modification de la quantité de l'article
       cart[indexCart].quantity = articleQuantity
@@ -111,7 +109,6 @@ function sendOrder(contact, products) {
     })
   }).then((res) => res.json())
     .then((data) => {
-      console.log(data);
       // Nettoyage du panier et go confirmation
       localStorage.removeItem('cart');
       window.location = "./confirmation.html?orderId=" + data.orderId;
@@ -202,7 +199,7 @@ if (cart && cart.length > 0) {
     totalQuantityTag.innerHTML = totalQuantity;
     totalPriceTag.innerHTML = totalPrice;
 
-    setCartItem(cartItems)    
+    setCartItem(cartItems)
   }
 
   startCartHandle()

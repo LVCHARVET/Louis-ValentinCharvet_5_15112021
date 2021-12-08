@@ -12,7 +12,6 @@ function addToCart(product, quantity, color, storageKey) {
   product.color = color
   product.quantity = parseInt(quantity)
 
-
   // Initialisation ou récupération du panier
   let cart = localStorage.getItem(storageKey)
   if (cart == null) {
