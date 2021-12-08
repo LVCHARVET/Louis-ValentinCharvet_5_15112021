@@ -4,11 +4,42 @@ var str = window.location.href;
 var url = new URL(str);
 var id = url.searchParams.get("id");
 
+/**
+ * Ajout d'un produit au pannier sans multiplier les articles de couleur et d'article identique
+ */
+function addToCart(product, quantity, color, storageKey) {
+  // Selection de la couleur et ajout de la quantité
+  product.color = color
+  product.quantity = parseInt(quantity)
+
+
+  // Initialisation ou récupération du panier
+  let cart = localStorage.getItem(storageKey)
+  if (cart == null) {
+    cart = []
+  } else {
+    cart = JSON.parse(cart)
+  }
+
+  // Recherche du produit correspondant (id et couleur) dans le panier
+  indexCart = cart.findIndex(x => x._id === product._id && x.color === product.color)
+
+  if (indexCart !== -1) {
+    // Modification de la quantité de l'article trouvé
+    cart[indexCart].quantity += product.quantity
+  } else {
+    // Ajout du nouveau produit
+    cart.push(product);
+  }
+  localStorage.setItem(storageKey, JSON.stringify(cart));
+}
+
+
 //on cherche l'API
 
 fetch("http://localhost:3000/api/products/" + id)
   .then((res) => res.json())
-  .then((data) => {
+  .then((product) => {
 
     //on pointe
     let itemImg = document.querySelector(".item__img");
@@ -24,42 +55,22 @@ fetch("http://localhost:3000/api/products/" + id)
     //itemImg.innerHTML = `<img src="${data.imageUrl}" alt="${data.altTxt}">`;
 
     let img = document.createElement('img')
-    img.src = data.imageUrl
-    img.alt = data.altTxt
+    img.src = product.imageUrl
+    img.alt = product.altTxt
     itemImg.appendChild(img)
 
-    itemName.innerHTML = `${data.name}`;
-    itemPrice.innerHTML = `${data.price}`;
-    itemDescription.innerHTML = `${data.description}`;
+    itemName.innerHTML = product.name
+    itemPrice.innerHTML = product.price
+    itemDescription.innerHTML = product.description
 
-    for (let index = 0; index < data.colors.length; index++) {
-      itemColors.innerHTML += `<option value="${data.colors[index]}">${data.colors[index]}</option>`;
+    for (let index = 0; index < product.colors.length; index++) {
+      itemColors.innerHTML += `<option value="${product.colors[index]}">${product.colors[index]}</option>`;
     }
 
     // On écoute le clique commande
     itemAdd.addEventListener("click", () => {
 
-      // On défini le panier
-      let product = {
-        id: data._id,
-        color: itemColors.value,
-        quantity: parseInt(itemQuantity.value),
-      };
-
-      let cart = [];
-
-      // On gére les donnés présente dans le panier
-      if (localStorage.getItem("cart") != null) {
-        cart = JSON.parse(localStorage.getItem("cart"));
-        for (prod of cart) {
-          if (prod.id === product.id && prod.color === product.color) {
-            cart.splice(cart.indexOf(prod), 1);
-            product.quantity += prod.quantity;
-          }
-        }
-      }
-      //On renvois le panier
-      cart.push(product);
-      localStorage.setItem("cart", JSON.stringify(cart));
+      //On execute la fonction pour envoyer un produit au panier
+      addToCart(product, itemQuantity.value, itemColors.value, "cart")
     });
   });

@@ -7,36 +7,26 @@ var totalPrice = 0;
 
 cart = JSON.parse(localStorage.getItem("cart"));
 
-if (cart && cart.length > 0) {
-
-  for (let i = 0; i < cart.length; i++) {
-
-    fetch("http://localhost:3000/api/products/" + cart[i].id)
-
-      .then((res) => res.json())
-      .then((data) => {
-
-        totalPrice += data.price * cart[i].quantity;
-        totalQuantity += cart[i].quantity;
-        totalQuantityTag.innerHTML = totalQuantity;
-        totalPriceTag.innerHTML = totalPrice;
-
-        cartItems.insertAdjacentHTML("beforeend",
-          `
-            <article class="cart__item" data-id="${cart[i].id}" data-color="${cart[i].color}">
+/**
+ *  Ajout du bloc HTML lié a l'article
+  */
+function setCartItem(item) {
+  item.insertAdjacentHTML("beforeend",
+      `
+            <article class="cart__item" data-id="${article._id}" data-color="${article.color}">
               <div class="cart__item__img">
-                <img src="${data.imageUrl}" alt="${data.altTxt}">
+                <img src="${article.imageUrl}" alt="${article.altTxt}">
               </div>
               <div class="cart__item__content">
                 <div class="cart__item__content__description">
-                  <h2>${data.name}</h2>
-                  <p>${cart[i].color}</p>
-                  <p>${data.price * cart[i].quantity}€</p>
+                  <h2>${article.name}</h2>
+                  <p>${article.color}</p>
+                  <p>${article.price * article.quantity}€</p>
                 </div>
                 <div class="cart__item__content__settings">
                   <div class="cart__item__content__settings__quantity">
                     <p>Qté : </p>
-                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${cart[i].quantity}">
+                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${article.quantity}">
                   </div>
                   <div class="cart__item__content__settings__delete">
                     <p class="deleteItem">Supprimer</p>
@@ -45,119 +35,70 @@ if (cart && cart.length > 0) {
               </div>
             </article>
           `
-        );
+    );
+}
 
-        /******************************************************/
-        /*** GESTION DE LA SUPPRESION D'ARTICLE DANS LE PANIER */
-        let itemDelete = document.querySelectorAll(".cart__item__content__settings__delete");
-        let currentArticle;
+/**
+ * Ajout des gestionnaires d'évennement pour la suppression et la modification de quantité
+ */
+let startCartHandle = () => {
+  /******************************************************/
+  /*** GESTION DE LA SUPPRESSION D'ARTICLE DANS LE PANIER */
+  let itemDelete = document.querySelectorAll(".cart__item__content__settings__delete");
+  let currentArticle;
+  console.log(itemDelete)
 
-        for (iDelete of itemDelete) {
-          currentArticle = iDelete.closest(":not(div)");
-          iDelete.addEventListener("click", () => {
-            if (currentArticle.dataset.id == cart[i].id && currentArticle.dataset.color == cart[i].color) {
-              cart.splice(cart.indexOf(cart[i]), 1);
+  for (iDelete of itemDelete) {    
+    iDelete.addEventListener("click", (e) => {
+      currentArticle = e.target.closest("article");
+      indexCart = cart.findIndex(x => x._id === currentArticle.dataset.id && x.color === currentArticle.dataset.color)
 
-              if (cart.length === 0) {
-                localStorage.removeItem("cart");
-              } else {
-                localStorage.setItem("cart", JSON.stringify(cart));
-              }
-            }
-          });
-        }
+      // Suppression du panier et suppression du DOM
+      cart.splice(indexCart, 1)
+      currentArticle.remove()
 
-        /********************************************/
-        /*** GESTION DE LA MODIFICATION DE QUANTITE */
-        let itemChangeQuantity = document.querySelectorAll(".itemQuantity");
-        let articleQuantity;
-        let actualArticleId;
-        let actualArticleTag;
-        let actualColor;
+      if (cart.length === 0) {
+        localStorage.removeItem("cart");
+      } else {
+        localStorage.setItem("cart", JSON.stringify(cart));
+      }
+    });
+  }
 
-        // Branchement event sur bouton supprimé
-        for (elem of itemChangeQuantity) {
-          elem.addEventListener('change', (e) => {
-            // Récupération des informations initiales
-            actualArticleTag = e.target.closest("article");
-            actualArticleId = actualArticleTag.dataset.id
-            actualColor = actualArticleTag.dataset.color;
-            articleQuantity = parseInt(e.target.value);
 
-            // Modification de la quantité de l'article
-            if (actualArticleId == cart[i].id && actualColor == cart[i].color) {
-              cart[i].quantity = articleQuantity;
-            }
+  /********************************************/
+  /*** GESTION DE LA MODIFICATION DE QUANTITE */
+  let itemChangeQuantity = document.querySelectorAll(".itemQuantity");
+  let articleQuantity;
+  let actualArticleId;
+  let actualArticleValue;
+  let actualColor;
 
-            // Sauvegarde en localStorage
-            localStorage.setItem("cart", JSON.stringify(cart));
-          })
-        }
-      });
+  // Branchement event sur bouton supprimé
+  for (elem of itemChangeQuantity) {
+    elem.addEventListener('change', (e) => {
+      // Récupération des informations initiales
+      actualArticleValue = e.target.closest("article");
+      actualArticleId = actualArticleValue.dataset.id
+      actualColor = actualArticleValue.dataset.color;
+      articleQuantity = parseInt(e.target.value);
+
+      indexCart = cart.findIndex(x => x._id === actualArticleId && x.color === actualColor)
+      console.log(indexCart)
+
+      // Modification de la quantité de l'article
+      cart[indexCart].quantity = articleQuantity
+
+      // Sauvegarde en localStorage
+      localStorage.setItem("cart", JSON.stringify(cart));
+    })
   }
 }
 
-//On défini les regex
-let regMail = /^\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/;
-let regName = /^[a-z ,.'-]+$/i;
-let regAdresse = /^[a-zA-Z0-9\s,'-]*$/;
-let regCity = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/;
-
-let buttonSubmit = document.getElementById("order");
-
-//on écoute le bouton Submit
-buttonSubmit.addEventListener("click", (e) => {
-  let firstName = document.getElementById("firstName").value;
-  let lastName = document.getElementById("lastName").value;
-  let address = document.getElementById("address").value;
-  let city = document.getElementById("city").value;
-  let email = document.getElementById("email").value;
-
-  //On créer l'objet contact et l'objet products
-  let contact = {
-    firstName: firstName,
-    lastName: lastName,
-    address: address,
-    city: city,
-    email: email
-  }
-
-  let products = [];
-
-  cartContent = JSON.parse(localStorage.getItem("cart"));
-
-  for (let i = 0; i < cartContent.length; i++) {
-    products.push(cartContent[i].id);
-  }
-
-  //On test la value de l'utilisateur
-  if (!regMail.test(email) ||
-    !regName.test(firstName) ||
-    !regName.test(lastName) ||
-    !regAdresse.test(address) ||
-    !regCity.test(city)) {
-
-    e.preventDefault();
-
-    if (!regMail.test(email)) {
-      document.getElementById("emailErrorMsg").innerHTML = "Adresse mail invalide !";
-    }
-    if (!regName.test(firstName)) {
-      document.getElementById("firstNameErrorMsg").innerHTML = "Prénom invalide !";
-    }
-    if (!regName.test(lastName)) {
-      document.getElementById("lastNameErrorMsg").innerHTML = "Nom de famille invalide !";
-    }
-    if (!regAdresse.test(address)) {
-      document.getElementById("addressErrorMsg").innerHTML = "Adresse introuvable !";
-    }
-    if (!regCity.test(city)) {
-      document.getElementById("cityErrorMsg").innerHTML = "Ville introuvable !";
-    };
-    return;
-  }
-
-  //On envois les données, on récupére le bon de commande et on redirige vers Confirmation.html
+/**
+ * On envois les données, on récupére le bon de commande et on redirige vers Confirmation.html
+ */
+function sendOrder(contact, products) {
   fetch("http://localhost:3000/api/products/order", {
     method: "POST",
     headers: {
@@ -170,9 +111,102 @@ buttonSubmit.addEventListener("click", (e) => {
     })
   }).then((res) => res.json())
     .then((data) => {
-      window.location = "./confirmation.html?orderId=" + data.orderId
+      console.log(data);
+      // Nettoyage du panier et go confirmation
+      localStorage.removeItem('cart');
+      window.location = "./confirmation.html?orderId=" + data.orderId;
     })
     .catch((error) => {
       console.error(error);
-    })
-})
+    });
+}
+
+let startFormHandle = () => {
+  //On défini les regex
+  let regMail = /^\w+([.-]?\w+)@\w+([.-]?\w+)(.\w{2,3})+$/;
+  let regName = /^[a-z ,.'-]+$/i;
+  let regAdresse = /^[a-zA-Z0-9\s,'-]*$/;
+  let regCity = /^[a-zA-Z]+(?:[\s-][a-zA-Z]+)*$/;
+
+
+  //on écoute le bouton Submit
+  document.getElementById("order").addEventListener("click", (e) => {
+    e.preventDefault();
+
+    let firstName = document.getElementById("firstName").value;
+    let lastName = document.getElementById("lastName").value;
+    let address = document.getElementById("address").value;
+    let city = document.getElementById("city").value;
+    let email = document.getElementById("email").value;
+
+    //On test la value de l'utilisateur
+    // Flag de test pour le formulaire
+    let parfait = true
+
+    if (!regMail.test(email)) {
+      document.getElementById("emailErrorMsg").innerHTML = "Adresse mail invalide !";
+      parfait = false
+    }
+    if (!regName.test(firstName)) {
+      document.getElementById("firstNameErrorMsg").innerHTML = "Prénom invalide !";
+      parfait = false
+    }
+    if (!regName.test(lastName)) {
+      document.getElementById("lastNameErrorMsg").innerHTML = "Nom de famille invalide !";
+      parfait = false
+    }
+    if (!regAdresse.test(address)) {
+      document.getElementById("addressErrorMsg").innerHTML = "Adresse introuvable !";
+      parfait = false
+    }
+    if (!regCity.test(city)) {
+      document.getElementById("cityErrorMsg").innerHTML = "Ville introuvable !";
+      parfait = false
+    };
+
+    // Test si une erreur existe
+    if (!parfait) {
+      return false
+    }
+
+    //On créer l'objet contact et l'objet products
+    let contact = {
+      firstName: firstName,
+      lastName: lastName,
+      address: address,
+      city: city,
+      email: email
+    }
+
+    let products = [];
+
+    cartContent = JSON.parse(localStorage.getItem("cart"));
+
+    for (let i = 0; i < cartContent.length; i++) {
+      products.push(cartContent[i]._id);
+    }
+
+    // On appell la fonction d'envois
+    sendOrder(contact, products);
+  })
+}
+
+
+if (cart && cart.length > 0) {
+
+  //for (let i = 0; i < cart.length; i++) {
+  for (article of cart) {
+
+    totalPrice += article.price * article.quantity;
+    totalQuantity += article.quantity;
+    totalQuantityTag.innerHTML = totalQuantity;
+    totalPriceTag.innerHTML = totalPrice;
+
+    setCartItem(cartItems)    
+  }
+
+  startCartHandle()
+  startFormHandle()
+}
+
+
