@@ -4,8 +4,20 @@ let totalQuantityTag = document.querySelector("#totalQuantity");
 let totalPriceTag = document.querySelector("#totalPrice");
 var totalQuantity = 0;
 var totalPrice = 0;
+var modifQuantity = 0;
+var modifPrice = 0;
 
 cart = JSON.parse(localStorage.getItem("cart"));
+
+/**
+ * Calcul du prix totale
+ */
+function totalCost(elem) {
+  totalPrice += elem.price * elem.quantity;
+  totalQuantity += elem.quantity;
+  totalQuantityTag.innerHTML = totalQuantity;
+  totalPriceTag.innerHTML = totalPrice;
+}
 
 /**
  *  Ajout du bloc HTML lié a l'article
@@ -52,6 +64,13 @@ let startCartHandle = () => {
       currentArticle = e.target.closest("article");
       indexCart = cart.findIndex(x => x._id === currentArticle.dataset.id && x.color === currentArticle.dataset.color)
 
+
+      // modification du totalPrice et totalQuantity
+      totalPrice -= cart[indexCart].price * cart[indexCart].quantity;
+      totalQuantity -= cart[indexCart].quantity;
+      totalQuantityTag.innerHTML = totalQuantity;
+      totalPriceTag.innerHTML = totalPrice;
+
       // Suppression du panier et suppression du DOM
       cart.splice(indexCart, 1)
       currentArticle.remove()
@@ -84,8 +103,19 @@ let startCartHandle = () => {
 
       indexCart = cart.findIndex(x => x._id === actualArticleId && x.color === actualColor)
 
+      //modification du totalPrice et totalQuantity
+      modifPrice = cart[indexCart].price * articleQuantity;
+      totalPrice -= cart[indexCart].price * cart[indexCart].quantity;
+      totalPrice += modifPrice;
+      modifQuantity = articleQuantity - cart[indexCart].quantity
+      totalQuantity += modifQuantity;
+      totalQuantityTag.innerHTML = totalQuantity;
+      totalPriceTag.innerHTML = totalPrice;
+
       // Modification de la quantité de l'article
       cart[indexCart].quantity = articleQuantity
+
+
 
       // Sauvegarde en localStorage
       localStorage.setItem("cart", JSON.stringify(cart));
@@ -191,19 +221,10 @@ let startFormHandle = () => {
 
 if (cart && cart.length > 0) {
 
-  //for (let i = 0; i < cart.length; i++) {
   for (article of cart) {
-
-    totalPrice += article.price * article.quantity;
-    totalQuantity += article.quantity;
-    totalQuantityTag.innerHTML = totalQuantity;
-    totalPriceTag.innerHTML = totalPrice;
-
     setCartItem(cartItems)
+    totalCost(article)
   }
-
   startCartHandle()
   startFormHandle()
 }
-
-
